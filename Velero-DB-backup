@@ -35,7 +35,10 @@ Run:
 kubectl get pods -n velero
 You should see velero pods running.
 
-    
+  kubectl create secret generic cloud-credentials \
+  --namespace velero \
+  --from-file=credentials-velero
+
     5: Create your first backup
 For example, to back up the police-db-ns namespace (where your database runs):
 
