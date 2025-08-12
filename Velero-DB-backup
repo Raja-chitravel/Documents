@@ -120,3 +120,147 @@ velero restore delete <restore-name>
 
 velero version
 velero status
+
+1. Create a scheduled backup
+Create backups on a schedule (like cron jobs):
+
+
+velero schedule create <schedule-name> --schedule="0 2 * * *" --include-namespaces <namespace>
+Example:
+
+
+velero schedule create daily-police-db --schedule="0 2 * * *" --include-namespaces police-db-ns
+This creates a backup every day at 2 AM.
+
+2. Backup with label selectors
+Backup only resources matching specific labels:
+
+
+velero backup create <backup-name> --selector <label-selector>
+Example:
+
+
+velero backup create police-app-backup --selector app=police-app
+
+
+3. Restore only specific resources from a backup
+Restore only certain namespaces, resources, or label selectors:
+
+velero restore create --from-backup <backup-name> --include-namespaces <namespace> --selector <label-selector>
+Example:
+
+
+velero restore create --from-backup police-db-backup --include-namespaces police-db-ns --selector app=police-db
+
+
+4. Exclude resources during backup
+You can exclude certain resources or namespaces when backing up:
+
+
+velero backup create <backup-name> --exclude-namespaces <namespace1,namespace2>
+
+
+5. Backup only cluster-scoped resources
+Backup resources like CRDs, ClusterRoles, etc.:
+
+
+velero backup create <backup-name> --include-cluster-resources=true
+
+
+6. Use hooks to execute commands before or after restore
+You can define hooks in your backup or restore specs to run scripts/commands inside pods to prepare or clean up.
+
+Example of a post-restore hook:
+
+
+hooks:
+  resources:
+  - name: my-pod
+    post:
+      exec:
+        command:
+        - /bin/sh
+        - -c
+        - "echo Restore complete"
+(You configure hooks via Velero backup or restore manifests.)
+
+7. Check Velero logs
+For troubleshooting:
+
+
+kubectl logs deployment/velero -n velero
+
+8. Changing Backup Storage Location
+Velero supports multiple backup storage locations. You can create a new one or switch between them:
+
+
+velero backup-location create <location-name> --provider <provider> --bucket <bucket-name> --config region=<region>
+
+
+9. Restore with name remapping
+Restore a backup but change the namespace of restored resources:
+
+
+velero restore create --from-backup <backup-name> --namespace-mappings old-namespace:new-namespace
+
+
+10. Restoring only persistent volumes
+Velero can restore only PersistentVolumeClaims and PersistentVolumes if needed:
+
+
+velero restore create --from-backup <backup-name> --include-resources persistentvolumeclaims,persistentvolume
+
+1. Get detailed logs for a backup
+
+velero backup logs <backup-name>
+Example:
+
+
+velero backup logs police-db-backup
+Shows detailed logs from the backup process to troubleshoot any issues.
+
+2. Get detailed logs for a restore
+
+velero restore logs <restore-name>
+Example:
+
+
+velero restore logs restore-police-db
+Shows detailed logs from the restore process.
+
+3. Add a Velero plugin
+
+velero plugin add <plugin-image>
+Example:
+
+
+velero plugin add velero/velero-plugin-for-aws:v1.2.0
+Used when you want to add or update a cloud provider plugin.
+
+4. Remove a Velero plugin
+
+velero plugin remove <plugin-name>
+Example:
+
+
+velero plugin remove velero/velero-plugin-for-aws
+
+5. Uninstall Velero from the cluster
+
+velero uninstall
+This removes Velero and its custom resources from your Kubernetes cluster.
+
+6. Customize backup concurrency
+
+velero backup create <backup-name> --concurrency <number>
+Controls how many resources are backed up in parallel.
+
+7. Customize restore concurrency
+
+velero restore create --from-backup <backup-name> --concurrency <number>
+Controls how many resources are restored in parallel.
+
+8. Set backup timeout
+
+velero backup create <backup-name> --backup-sync-period <duration>
+Sets timeout for the backup sync.
