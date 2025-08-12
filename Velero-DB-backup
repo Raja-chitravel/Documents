@@ -79,3 +79,44 @@ When you run the standard velero install command with the --provider flag (e.g.,
 The plugin comes bundled with Velero’s installation manifests or is pulled automatically from Velero’s container images.
 
 kindly update velero as it gets new updates.
+
+
+
+
+
+1. List all backups
+
+velero backup get
+
+2. Create a backup
+
+velero backup create <backup-name> --include-namespaces <namespace1,namespace2> --wait
+
+3. Get details of a specific backup
+
+velero backup describe <backup-name> --details
+
+4. List all restores
+
+velero restore get
+
+5. Create a restore from a backup
+
+velero restore create --from-backup <backup-name>
+
+6. Get details of a specific restore
+
+velero restore describe <restore-name> --details
+
+7. Delete a backup
+
+velero backup delete <backup-name>
+
+8. Delete a restore
+
+velero restore delete <restore-name>
+
+9. Check Velero version and status
+
+velero version
+velero status
