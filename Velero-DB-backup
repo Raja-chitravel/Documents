@@ -73,3 +73,9 @@ Backup by namespace lets you capture all resources related to your database at o
 
 Database itself is just one part of the namespace; backing up the whole namespace ensures all dependent parts are included.
 --wait makes the command wait until the backup finishes, so you get immediate feedback.
+
+When you run the standard velero install command with the --provider flag (e.g., --provider aws), Velero automatically installs the correct cloud provider plugin as part of the deployment.
+
+The plugin comes bundled with Velero’s installation manifests or is pulled automatically from Velero’s container images.
+
+kindly update velero as it gets new updates.
