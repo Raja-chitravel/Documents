@@ -1,0 +1,75 @@
+Step-by-step Velero install (AWS example)
+
+1. Prepare AWS S3 bucket & IAM user
+Before installing Velero, you need:
+An S3 bucket created (to store backups)
+An IAM user with permissions to access S3 and create snapshots (EBS)
+
+
+2. Create AWS credentials file for Velero
+Create a file credentials-velero with this content (replace with your keys):
+
+
+aws_access_key_id=YOUR_ACCESS_KEY_ID
+aws_secret_access_key=YOUR_SECRET_ACCESS_KEY
+
+
+  3. Install Velero with this command
+
+velero install \
+  --provider aws \
+  --bucket your-s3-bucket-name \
+  --secret-file ./credentials-velero \
+  --backup-location-config region=your-region \
+  --snapshot-location-config region=your-region
+This command will:
+
+Create velero namespace automatically
+Deploy Velero pods in that namespace
+Configure Velero with your S3 bucket and credentials
+
+    
+    4. Verify installation
+Run:
+
+kubectl get pods -n velero
+You should see velero pods running.
+
+    
+    5: Create your first backup
+For example, to back up the police-db-ns namespace (where your database runs):
+
+
+velero backup create police-db-backup --include-namespaces=police-db-ns --wait
+
+
+    6: Check backup status and details
+
+velero backup describe police-db-backup --details
+This shows:
+
+Which resources were backed up
+
+If there were any errors
+
+Metadata about the backup
+
+    7(optional): Schedule automatic backups
+If you want Velero to take backups regularly (e.g., daily at 2 AM):
+
+
+velero schedule create daily-db-backup --schedule "0 2 * * *" --include-namespaces=police-db-ns
+
+    8: Restore from backup (when needed)
+To restore your DB namespace from a backup:
+
+velero restore create --from-backup police-db-backup
+
+    
+
+    
+    Why backup by namespace?
+Backup by namespace lets you capture all resources related to your database at once (pods, PVCs, services, configs).
+
+Database itself is just one part of the namespace; backing up the whole namespace ensures all dependent parts are included.
+--wait makes the command wait until the backup finishes, so you get immediate feedback.
