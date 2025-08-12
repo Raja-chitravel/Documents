@@ -1,0 +1,19 @@
+sh '''#!/bin/bash
+mkdir -p scan_reports
+
+status=0
+
+echo "===== DOCKLE SCAN ====="
+dockle --exit-code 1 --exit-level WARN $IMAGE_NAME | tee scan_reports/dockle.txt
+[ ${PIPESTATUS[0]} -ne 0 ] && status=1
+
+echo "===== GRYPE SCAN ====="
+grype $IMAGE_NAME --fail-on High | tee scan_reports/grype.txt
+[ ${PIPESTATUS[0]} -ne 0 ] && status=1
+
+echo "===== TRIVY SCAN ====="
+trivy image --severity HIGH,CRITICAL --exit-code 1 --format table $IMAGE_NAME | tee scan_reports/trivy.txt
+[ ${PIPESTATUS[0]} -ne 0 ] && status=1
+
+exit $status
+'''
