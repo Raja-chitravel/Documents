@@ -1,0 +1,121 @@
+Prerequisites:   Ensure you have the following:
+
+Amazon EKS Cluster: An existing EKS cluster.
+
+kubectl: Version 1.31 or higher installed and configured to access your EKS cluster.
+
+Helm: Version 3.16.2 or higher installed.
+
+IAM OIDC Provider: Your EKS cluster should have an OIDC provider configured.
+
+
+1st step:
+
+Go to AWS Console
+
+eks - cluster - cluster name - overview
+
+under overview tab 
+
+we can see openID Connect URL (OIDC)
+copy that URL   
+
+Step 2:
+
+IAM - Identity Providers - Create Identity Providers
+
+select OpenID Connect
+under provider URL paste the URL u have copied (OIDC)
+
+Auidence - Type as sts.amazonaws.com
+
+click add provider
+
+copy the identity provider ID number.
+
+Step 3:
+
+Since we have to create our own policy for this i am using aws document for reference.
+
+IAM - Policy - create policy - json -
+
+(https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.13.3/docs/install/iam_policy.json)
+
+browse this URL and paste the police there and save there
+
+IAM - Role - Create Role - eks alb role
+
+assign the policy which we have created.
+
+IAM - Role - eks alb role - under this click on Trusted relationship
+
+we need to add the Identity Providers number there.
+
+Edit the trust entities
+totally we need to paste them in 3 place 
+"Principal":{ " Federated": "arn:aws:iam: /oidc/id/paste the Identity Providers")
+string also we have to paste them oidc
+
+Update policy.
+
+step 4:
+
+Create the file 
+
+api version: v1
+Kind: ServiceAccount
+Metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  annotations:
+   eks.amazonaws.com/role-arn: IAM role paste(/eks alb role)
+
+save this as a file service-account.yaml and deploy
+
+kubectl apply -f service-account.yaml
+
+kubectl describe serviceaccount aws-load-balancer-controller -n kube-system
+
+
+now install helm on the EKS Cluster
+
+Using Helm (Recommended)
+
+Add the EKS charts repository:
+
+helm repo add eks https://aws.github.io/eks-charts
+
+helm repo update eks
+
+now install helm on the EKS Cluster
+
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=my-cluster \
+  --set serviceAccount.create=false \
+  --set region=region-code
+  --set vpcId=vpc-xxxxxxxx
+  --set serviceAccount.name=aws-load-balancer-controller \
+
+enter these items and run this in cluster
+
+aws load balancee controller is now installed on EKS
+
+wget https://raw.githubusercontent.com/aws/eks-charts/master/stable/aws-load-balancer-controller/crds/crds.yaml
+kubectl apply -f crds.yaml
+
+Verify that the controller is installed.
+kubectl get deployment -n kube-system aws-load-balancer-controller
+
+go to the vpc and check the public subnets and add these
+
+vpc - subnets - select the subnet -tag- manage tag - add new tag - 
+
+kubernetes.io/role/elb
+
+ensure these tag has to be added in 2 subnets.
+
+now ingress.yaml file has to be deployed.
+once it done.
+you are set.
