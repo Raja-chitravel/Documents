@@ -32,7 +32,7 @@ subjects:
     namespace: default
 roleRef:
   kind: ClusterRole
-  name: cluster-admin
+  name: admin-role
   apiGroup: rbac.authorization.k8s.io
 
 General:
