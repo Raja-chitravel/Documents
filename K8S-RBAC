@@ -126,8 +126,12 @@ clusters:
 contexts:
 - context:
     cluster: arn:aws:eks:ap-south-1:905418014070:cluster/my-eks-cluster
-    user: arn:aws:eks:ap-south-1:905418014070:cluster/my-eks-cluster
+    user: arn:aws:eks:ap-south-1:905418014070:cluster/my-eks-cluster -- here also change the name--
   name: arn:aws:eks:ap-south-1:905418014070:cluster/my-eks-cluster
 current-context: arn:aws:eks:ap-south-1:905418014070:cluster/my-eks-cluster
 kind: Config
 preferences: {}
+users:
+  -name: user name---
+   user:
+      token: paste the token here
