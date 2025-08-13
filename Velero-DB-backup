@@ -21,7 +21,19 @@ velero install \
   --bucket your-s3-bucket-name \
   --secret-file ./credentials-velero \
   --backup-location-config region=your-region \
-  --snapshot-location-config region=your-region
+  --snapshot-location-config region=your-region 
+(or) 
+
+(snapshot or S3)
+
+velero install \
+  --provider aws \
+  --plugins velero/velero-plugin-for-aws:v1.8.0 \
+  --bucket <your-velero-bucket> \
+  --backup-location-config region=<your-region> \
+  --secret-file ./credentials-velero \
+  --default-volumes-to-restic
+
 This command will:
 
 Create velero namespace automatically
@@ -35,9 +47,9 @@ Run:
 kubectl get pods -n velero
 You should see velero pods running.
 
-  kubectl create secret generic cloud-credentials \
-  --namespace velero \
-  --from-file=credentials-velero
+This command is to keep the credential in secretcredentials-velero (Access key and secret key)
+
+  kubectl create secret generic cloud-credentials --namespace velero --from-file=credentials-velero
 
     5: Create your first backup
 For example, to back up the police-db-ns namespace (where your database runs):
