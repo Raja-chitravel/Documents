@@ -1,0 +1,55 @@
+# 1. Update packages & install Java + tools
+sudo apt-get update
+sudo apt-get install openjdk-17-jdk tar wget -y
+
+# 2. Download Nexus
+cd /opt
+sudo wget https://download.sonatype.com/nexus/3/nexus-3.82.0-unix.tar.gz
+
+# 3. Extract Nexus
+sudo tar -zxvf nexus-3.82.0-unix.tar.gz
+sudo mv nexus-3.82.0 nexus
+
+# 4. Create nexus user
+sudo adduser --disabled-password --gecos "" nexus
+
+# 5. Set ownership
+sudo chown -R nexus:nexus /opt/nexus
+sudo chown -R nexus:nexus /opt/sonatype-work
+
+# 6. Configure run_as_user
+echo 'run_as_user="nexus"' | sudo tee /opt/nexus/bin/nexus.rc
+
+# Optional: Edit JVM options
+sudo nano /opt/nexus/bin/nexus.vmoptions
+# Add:
+# -XX:MaxDirectMemorySize=2703m
+# -Djava.net.preferIPv4Stack=true
+
+# 7. Create systemd service
+sudo nano /etc/systemd/system/nexus.service
+# Paste:
+[Unit]
+Description=Nexus Repository Service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/opt/nexus/bin/nexus start
+ExecStop=/opt/nexus/bin/nexus stop
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
+# 8. Start Nexus
+sudo systemctl daemon-reload
+sudo systemctl enable nexus
+sudo systemctl start nexus
+sudo systemctl status nexus
+
+# 9. Allow port in UFW (if UFW is used)
+sudo ufw allow 8081/tcp
