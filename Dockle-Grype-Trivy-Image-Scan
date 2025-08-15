@@ -1,3 +1,66 @@
+Installation 
+
+sudo apt-get update
+sudo apt-get instal wget tar -y
+
+1. Dockle – Container Linter
+# Download the latest release
+wget https://github.com/goodwithtech/dockle/releases/latest/download/dockle_$(uname -s)_$(uname -m).tar.gz
+
+# Extract
+tar zxvf dockle_$(uname -s)_$(uname -m).tar.gz
+
+# Move to /usr/local/bin
+sudo mv dockle /usr/local/bin/
+
+Test:
+
+dockle --version
+
+
+2. Trivy – Vulnerability Scanner
+# Install script from Aqua Security
+sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+  sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+
+echo deb [signed-by=/usr/share/keyrings/trivy.gpg] \
+  https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | \
+  sudo tee /etc/apt/sources.list.d/trivy.list
+
+sudo apt-get update
+sudo apt-get install -y trivy
+
+
+Test:
+
+trivy --version
+
+
+3. Grype – Vulnerability Scanner (Anchore)
+# Install using script
+curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b /usr/local/bin
+
+# OR install via package manager if available
+# brew install anchore/grype/grype   # for Mac users
+
+
+
+Test:
+
+grype --version
+
+✅ After installing, you can test them quickly:
+
+dockle myimage:latest
+trivy image myimage:latest
+grype myimage:latest
+
+
+
+Groovy Commands to scan images whithout interuption
+
 sh '''#!/bin/bash
 mkdir -p scan_reports
 
