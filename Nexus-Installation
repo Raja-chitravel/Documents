@@ -53,3 +53,17 @@ sudo systemctl status nexus
 
 # 9. Allow port in UFW (if UFW is used)
 sudo ufw allow 8081/tcp
+
+Access
+
+AWS Security Group: Add inbound rule for TCP 8081 from your IP.
+
+Browser: http://<EC2-Public-IP>:8081
+
+Username: admin
+
+Password:
+
+sudo cat /opt/sonatype-work/nexus3/admin.password
+
+
