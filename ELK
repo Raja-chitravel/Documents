@@ -1,0 +1,155 @@
+🛠️ Step-by-Step Guide to Configure ELK Stack
+1️⃣ Prerequisites
+
+A server (Linux VM or bare metal, minimum 4 GB RAM, 2 CPU).
+
+sudo access.
+
+Java (Elasticsearch & Logstash need it).
+
+Ports open:
+
+9200 → Elasticsearch
+
+5601 → Kibana
+
+5044 → Logstash (default for Beats/Filebeat input)
+
+2️⃣ Install Elasticsearch
+# Download and install Elasticsearch
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+sudo apt-get install apt-transport-https -y
+echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-8.x.list
+sudo apt-get update && sudo apt-get install elasticsearch -y
+
+Configure Elasticsearch:
+
+Edit the config:
+
+sudo nano /etc/elasticsearch/elasticsearch.yml
+
+
+Set:
+
+network.host: 0.0.0.0   # allows remote connections
+discovery.type: single-node
+
+
+Start service:
+
+sudo systemctl enable elasticsearch
+sudo systemctl start elasticsearch
+
+
+Check:
+
+curl http://localhost:9200
+
+3️⃣ Install Logstash
+sudo apt-get install logstash -y
+
+Configure Logstash Pipeline:
+
+Edit file:
+
+sudo nano /etc/logstash/conf.d/logstash.conf
+
+
+Example pipeline:
+
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  grok {
+    match => { "message" => "%{COMMONAPACHELOG}" }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "weblogs-%{+YYYY.MM.dd}"
+  }
+  stdout { codec => rubydebug }
+}
+
+
+Start Logstash:
+
+sudo systemctl enable logstash
+sudo systemctl start logstash
+
+4️⃣ Install Kibana
+sudo apt-get install kibana -y
+
+Configure Kibana:
+sudo nano /etc/kibana/kibana.yml
+
+
+Set:
+
+server.port: 5601
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://localhost:9200"]
+
+
+Start Kibana:
+
+sudo systemctl enable kibana
+sudo systemctl start kibana
+
+
+Open in browser:
+
+http://<your-server-ip>:5601
+
+5️⃣ Install Filebeat (to send logs)
+sudo apt-get install filebeat -y
+
+Configure Filebeat:
+sudo nano /etc/filebeat/filebeat.yml
+
+
+Set output to Logstash:
+
+output.logstash:
+  hosts: ["localhost:5044"]
+
+
+Enable Filebeat module (e.g., Apache):
+
+sudo filebeat modules enable apache
+
+
+Start Filebeat:
+
+sudo systemctl enable filebeat
+sudo systemctl start filebeat
+
+6️⃣ Verify Setup
+
+Elasticsearch: http://<server-ip>:9200
+
+Kibana UI: http://<server-ip>:5601
+
+In Kibana → Go to Discover tab → You should see logs from Filebeat.
+
+7️⃣ (Optional) Secure ELK
+
+Set Elasticsearch & Kibana users/passwords.
+
+Use SSL/TLS for secure communication.
+
+🚀 Flow Summary
+
+Filebeat → collects logs → sends to Logstash.
+
+Logstash → processes & transforms logs → sends to Elasticsearch.
+
+Elasticsearch → stores & indexes data.
+
+Kibana → visualizes logs.
